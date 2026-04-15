@@ -80,7 +80,7 @@ class AuthController extends Controller
             'characterCount' => $characterCount,
             'crudEnabled' => $crudEnabled,
             'characters' => $characters,
-            'elements' => ['Anemo', 'Cryo', 'Dendro', 'Electro', 'Geo', 'Hydro', 'Pyro'],
+            'characterCatalog' => Character::catalog(),
         ]);
     }
 }

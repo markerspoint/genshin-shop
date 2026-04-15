@@ -20,6 +20,7 @@ Route::middleware('auth')->group(function () {
     Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 
     Route::post('/characters', [CharacterController::class, 'store'])->name('characters.store');
+    Route::post('/characters/{character}/buy', [CharacterController::class, 'buy'])->name('characters.buy');
     Route::patch('/characters/{character}', [CharacterController::class, 'update'])->name('characters.update');
     Route::delete('/characters/{character}', [CharacterController::class, 'destroy'])->name('characters.destroy');
 });
