@@ -145,15 +145,11 @@
                         <div class="mt-2 max-h-[300px] space-y-2 overflow-y-auto pr-1">
                             @forelse ($characters as $character)
                                 <div class="rounded-lg border thin-border bg-[#17181b] p-2.5">
-                                    <div class="grid gap-2 md:grid-cols-[180px_210px_70px_auto_auto] md:items-center">
-                                        <form id="update-listing-{{ $character->id }}" method="POST" action="{{ route('characters.update', $character->id) }}" class="contents">
-                                            @csrf
-                                            @method('PATCH')
-                                            <select name="name" data-character-select data-preview-target="preview-{{ $character->id }}" data-element-target="element-{{ $character->id }}" class="rounded-lg border border-white/20 bg-[#111214] px-2.5 py-2 text-sm text-white focus:border-cyan-200 focus:outline-none">
-                                                @foreach ($characterCatalog as $characterName => $details)
-                                                    <option value="{{ $characterName }}" @selected($character->name === $characterName)>{{ $characterName }}</option>
-                                                @endforeach
-                                            </select>
+                                    <div class="grid gap-2 md:grid-cols-[1fr_auto] md:items-center">
+                                        <div class="grid gap-2 md:grid-cols-[180px_210px_70px] md:items-center">
+                                            <p class="rounded-lg border border-white/20 bg-[#111214] px-2.5 py-2 text-sm font-semibold text-white">
+                                                {{ $character->name }}
+                                            </p>
                                             <div class="flex items-center gap-2 rounded-lg border border-white/20 bg-[#111214] px-2.5 py-2">
                                                 <img id="preview-{{ $character->id }}" src="{{ $character->image_url }}" alt="{{ $character->name }}" class="h-8 w-8 rounded-md object-cover object-top">
                                                 <div>
@@ -161,18 +157,29 @@
                                                     <p id="element-{{ $character->id }}" class="text-xs font-semibold">{{ $character->element }}</p>
                                                 </div>
                                             </div>
-                                            <input name="sort_order" type="number" min="1" value="{{ $character->sort_order }}" class="rounded-lg border border-white/20 bg-[#111214] px-2.5 py-2 text-sm text-white focus:border-cyan-200 focus:outline-none">
-                                        </form>
-                                        <button type="submit" form="update-listing-{{ $character->id }}" class="rounded-lg border border-cyan-200/60 px-2.5 py-2 text-[11px] font-bold uppercase tracking-[0.1em] text-cyan-100 transition hover:bg-cyan-200/10">
-                                            Edit
-                                        </button>
-                                        <form method="POST" action="{{ route('characters.destroy', $character->id) }}" onsubmit="return confirm('Remove this listing?');">
-                                            @csrf
-                                            @method('DELETE')
-                                            <button type="submit" class="rounded-lg border border-rose-200/60 px-2.5 py-2 text-[11px] font-bold uppercase tracking-[0.1em] text-rose-100 transition hover:bg-rose-200/10">
-                                                Remove
+                                            <p class="rounded-lg border border-white/20 bg-[#111214] px-2.5 py-2 text-sm font-semibold text-white">
+                                                {{ $character->sort_order }}
+                                            </p>
+                                        </div>
+                                        <div class="flex items-center gap-2 md:justify-end">
+                                            <button
+                                                type="button"
+                                                data-edit-open
+                                                data-update-url="{{ route('characters.update', $character->id) }}"
+                                                data-name="{{ $character->name }}"
+                                                data-sort-order="{{ $character->sort_order }}"
+                                                class="rounded-lg border border-cyan-200/60 px-2.5 py-2 text-[11px] font-bold uppercase tracking-[0.1em] text-cyan-100 transition hover:bg-cyan-200/10"
+                                            >
+                                                Edit
                                             </button>
-                                        </form>
+                                            <form method="POST" action="{{ route('characters.destroy', $character->id) }}" onsubmit="return confirm('Remove this listing?');">
+                                                @csrf
+                                                @method('DELETE')
+                                                <button type="submit" class="rounded-lg border border-rose-200/60 px-2.5 py-2 text-[11px] font-bold uppercase tracking-[0.1em] text-rose-100 transition hover:bg-rose-200/10">
+                                                    Remove
+                                                </button>
+                                            </form>
+                                        </div>
                                     </div>
                                 </div>
                             @empty
@@ -186,9 +193,51 @@
             </main>
         </div>
         @if ($crudEnabled)
+            <div id="edit-modal" class="fixed inset-0 z-[80] hidden items-center justify-center p-3">
+                <div data-edit-close class="absolute inset-0 bg-black/75"></div>
+                <div class="relative z-10 w-full max-w-md rounded-xl border thin-border bg-[#111214] p-4">
+                    <div class="mb-3 flex items-center justify-between gap-2">
+                        <h3 class="title-font text-lg font-bold">Edit Listing</h3>
+                        <button type="button" data-edit-close class="rounded-md border border-white/30 px-2 py-1 text-xs font-semibold uppercase tracking-[0.08em] text-white/80 transition hover:bg-white/10">
+                            Close
+                        </button>
+                    </div>
+                    <form id="edit-modal-form" method="POST" class="space-y-2">
+                        @csrf
+                        @method('PATCH')
+                        <select id="edit-modal-name" name="name" data-character-select data-preview-target="edit-modal-preview" data-element-target="edit-modal-element" class="w-full rounded-lg border border-white/20 bg-[#17181b] px-2.5 py-2 text-sm text-white focus:border-cyan-200 focus:outline-none">
+                            @foreach ($characterCatalog as $characterName => $details)
+                                <option value="{{ $characterName }}">{{ $characterName }}</option>
+                            @endforeach
+                        </select>
+                        <div class="flex items-center gap-2 rounded-lg border border-white/20 bg-[#17181b] px-2.5 py-2">
+                            <img id="edit-modal-preview" src="{{ reset($characterCatalog)['image_url'] ?? '' }}" alt="Character preview" class="h-9 w-9 rounded-md object-cover object-top">
+                            <div>
+                                <p class="text-[11px] text-white/60">Element</p>
+                                <p id="edit-modal-element" class="text-xs font-semibold">{{ reset($characterCatalog)['element'] ?? '-' }}</p>
+                            </div>
+                        </div>
+                        <input id="edit-modal-sort-order" name="sort_order" type="number" min="1" placeholder="Price" class="w-full rounded-lg border border-white/20 bg-[#17181b] px-2.5 py-2 text-sm text-white placeholder:text-slate-400 focus:border-cyan-200 focus:outline-none">
+                        <div class="flex items-center justify-end gap-2 pt-1">
+                            <button type="button" data-edit-close class="rounded-lg border border-white/30 px-3 py-2 text-[11px] font-bold uppercase tracking-[0.1em] text-white/80 transition hover:bg-white/10">
+                                Cancel
+                            </button>
+                            <button type="submit" class="rounded-lg border border-cyan-200/60 px-3 py-2 text-[11px] font-bold uppercase tracking-[0.1em] text-cyan-100 transition hover:bg-cyan-200/10">
+                                Save Changes
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
             <script>
                 const characterCatalog = @json($characterCatalog);
                 const selects = document.querySelectorAll('[data-character-select]');
+                const editModal = document.getElementById('edit-modal');
+                const editModalForm = document.getElementById('edit-modal-form');
+                const editModalName = document.getElementById('edit-modal-name');
+                const editModalSortOrder = document.getElementById('edit-modal-sort-order');
+                const editOpenButtons = document.querySelectorAll('[data-edit-open]');
+                const editCloseButtons = document.querySelectorAll('[data-edit-close]');
 
                 selects.forEach((select) => {
                     const previewId = select.dataset.previewTarget;
@@ -208,6 +257,58 @@
                     select.addEventListener('change', applyCharacter);
                     applyCharacter();
                 });
+
+                function closeEditModal() {
+                    if (!editModal) return;
+                    editModal.classList.add('hidden');
+                    editModal.classList.remove('flex');
+                }
+
+                editOpenButtons.forEach((button) => {
+                    button.addEventListener('click', () => {
+                        if (!editModal || !editModalForm || !editModalName || !editModalSortOrder) return;
+
+                        editModalForm.action = button.dataset.updateUrl || '';
+                        editModalName.value = button.dataset.name || '';
+                        editModalSortOrder.value = button.dataset.sortOrder || '';
+                        editModalName.dispatchEvent(new Event('change'));
+
+                        editModal.classList.remove('hidden');
+                        editModal.classList.add('flex');
+                        editModalName.focus();
+                    });
+                });
+
+                editCloseButtons.forEach((button) => {
+                    button.addEventListener('click', closeEditModal);
+                });
+
+                document.addEventListener('keydown', (event) => {
+                    if (event.key === 'Escape') {
+                        closeEditModal();
+                    }
+                });
+
+                editModalForm?.addEventListener('submit', () => {
+                    if (editModal) {
+                        editModal.classList.add('pointer-events-none', 'opacity-80');
+                    }
+                });
+
+                window.addEventListener('pageshow', () => {
+                    if (editModal) {
+                        editModal.classList.remove('pointer-events-none', 'opacity-80');
+                        closeEditModal();
+                    }
+                });
+
+                if (editModalForm && editModalName) {
+                    editModalForm.addEventListener('reset', () => {
+                        setTimeout(() => {
+                            editModalName.dispatchEvent(new Event('change'));
+                        }, 0);
+                    });
+                }
             </script>
         @endif
     </body>

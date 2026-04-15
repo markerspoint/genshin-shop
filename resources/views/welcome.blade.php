@@ -20,6 +20,13 @@
         'Furina' => 'https://static.wikia.nocookie.net/gensin-impact/images/9/94/Character_Furina_Full_Wish.png/revision/latest?cb=20231021031756',
     ];
 
+    $teamMembers = [
+        'Mark Ian D. Dela Cruz',
+        'Khen Matondo',
+        'Renle M. Carpentero',
+        'Joshua D. Mirano',
+    ];
+
     $elementClasses = [
         'Anemo' => 'bg-emerald-300 text-emerald-950',
         'Cryo' => 'bg-cyan-300 text-cyan-950',
@@ -62,6 +69,7 @@
                         <a href="#characters" class="hover:text-white">Characters</a>
                         <a href="#builds" class="hover:text-white">Builds</a>
                         <a href="#teams" class="hover:text-white">Team List</a>
+                        <a href="#about-team" class="hover:text-white">About Team</a>
                         <a href="#database" class="hover:text-white">Database</a>
                     </nav>
 
@@ -194,6 +202,25 @@
                             <div class="pt-2 text-center">
                                 <button class="rounded-full border thin-border px-5 py-2 text-sm text-white/80 transition hover:border-white/40 hover:text-white">View more</button>
                             </div>
+                        </div>
+                    </div>
+                </section>
+
+                <section id="about-team" class="border-x border-b thin-border bg-[#141519]">
+                    <div class="mx-auto max-w-[1180px] px-6 py-10">
+                        <p class="text-sm text-white/70">Project Team</p>
+                        <h2 class="title-font mt-1 text-4xl font-bold">About Our Team</h2>
+                        <p class="mt-2 max-w-2xl text-sm text-white/70">
+                            This project was designed and developed by our team as part of our Genshin-themed marketplace and UI system.
+                        </p>
+
+                        <div class="mt-6 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
+                            @foreach ($teamMembers as $member)
+                                <article class="rounded-xl border thin-border bg-[#111214] p-4">
+                                    <p class="text-xs uppercase tracking-[0.16em] text-cyan-200/90">Member</p>
+                                    <h3 class="mt-2 text-base font-semibold leading-snug text-white">{{ $member }}</h3>
+                                </article>
+                            @endforeach
                         </div>
                     </div>
                 </section>
